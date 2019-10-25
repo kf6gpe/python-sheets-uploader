@@ -2,6 +2,7 @@ from __future__ import print_function
 from __future__ import absolute_import
 from __future__ import division
 from __future__ import print_function
+import csv
 import pickle
 import os.path
 import gspread
@@ -20,17 +21,22 @@ TODO(rischpater): DO NOT SUBMIT without a detailed description of python-sheets-
 SCOPES = 'https://www.googleapis.com/auth/spreadsheets'
 
 
-# FLAGS = flags.FLAGS
-
-SPREADSHEET_KEY = '1kbl4iBLutedEhsJ6MjeVjTdr8mnP_MDVXqYvVBoTRgI'
+FLAGS = flags.FLAGS
+flags.DEFINE_string('spreadsheet_key', None, 'Spreadsheet key')
+flags.DEFINE_string('csv_file', None, 'csv file to import')
+flags.DEFINE_string('credentials', None, 'sheets credentials')
+flags.mark_flag_as_required('spreadsheet_key')
+flags.mark_flag_as_required('csv_file')
+flags.mark_flag_as_required('credentials')
 
 
 def main(argv):
-    if len(argv) > 1:
-        raise app.UsageError('Too many command-line arguments.')
 
+    SPREADSHEET_KEY = FLAGS.spreadsheet_key
+    CSV_FILE = FLAGS.csv_file
+    CREDENTIALS = FLAGS.credentials
     # Authorize and get a client
-    creds = ServiceAccountCredentials.from_json_keyfile_name('credentials.json', SCOPES)
+    creds = ServiceAccountCredentials.from_json_keyfile_name(CREDENTIALS, SCOPES)
 
     print("authorize")
 
@@ -42,8 +48,14 @@ def main(argv):
     sheet = client.open_by_key(SPREADSHEET_KEY)
     worksheet = sheet.worksheets()[0]
 
-    # Test --- append a record to the 
-    worksheet.insert_row(['foo', 'bar'])
+    # Read the CSV
+    with open(CSV_FILE, newline='') as csvfile:
+      data = csv.reader(csvfile, delimiter=',', quotechar='\'')
+      for row in data:
+        print(row)
+        # worksheet.insert_row(row)
+        # Don't run afoul of quota limitations.
+        # time.sleep(1)
 
 if __name__ == '__main__':
   app.run(main)
