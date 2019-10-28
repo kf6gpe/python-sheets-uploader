@@ -50,10 +50,10 @@ def main(argv):
 
     # Read the CSV
     with open(CSV_FILE, newline='') as csvfile:
-      data = csv.reader(csvfile, delimiter=',', quotechar='\'')
+      data = csv.reader(csvfile, delimiter=',')
       for row in data:
         print(row)
-        # worksheet.insert_row(row)
+        worksheet.append_row(row)
         # Don't run afoul of quota limitations.
         # time.sleep(1)
 
